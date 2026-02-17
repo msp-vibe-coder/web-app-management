@@ -27,7 +27,7 @@ The local ed25519 key (`~/.ssh/id_ed25519`) is authorized on the server.
 - **Git**: 2.43.0
 - **Docker Engine**: 29.2.1
 - **Docker Compose**: v5.0.2 (plugin)
-- **Traefik**: v3.3 (running as Docker container)
+- **Traefik**: latest (running as Docker container, upgraded from v3.3 for Docker Engine API compatibility)
 
 ### Docker Configuration
 
@@ -68,11 +68,38 @@ networks:
 - **Branch**: `main`
 - **Auth**: GitHub PAT stored in `.env` (use for push if credential helper isn't configured)
 
+## Landing Page
+
+- **Location (server)**: `/home/wapp01admin/landing-page/`
+- **Location (repo)**: `landing-page/`
+- **Container**: `landing-page` (nginx:alpine)
+- **Traefik route**: `PathPrefix('/')` with `priority=1` (lowest — other app routes take precedence)
+- **Entrypoint**: `web` (port 80)
+
+### Adding a New App Link
+
+Edit the `apps` array at the top of the `<script>` block in `landing-page/html/index.html`:
+
+```js
+const apps = [
+  { name: "My App", description: "What it does", path: "/myapp", status: "running" },
+];
+```
+
+Status options: `"running"` (green), `"warning"` (amber), `"down"` (red).
+
+After editing, copy the updated file to the server and the container will serve it immediately (volume is read-only mount):
+
+```bash
+scp landing-page/html/index.html wapp01admin@10.69.69.10:/home/wapp01admin/landing-page/html/index.html
+```
+
 ## Repository Contents
 
 - `.env` — Contains server credentials (IP, username, password) and GitHub PAT as a backup reference. **Must stay in `.gitignore`.**
 - `.gitignore` — Excludes `.env` from version control
 - `CLAUDE.md` — This file; project guidance for Claude Code
+- `landing-page/` — Landing page app (nginx container + HTML)
 
 ## Security Notes
 

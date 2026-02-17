@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protek Support — Server Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --font-heading: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --transition-speed: 0.35s;
+    }
+
+    [data-theme="dark"] {
+      --bg-base: #0a0f1e;
+      --bg-card: #111827;
+      --bg-card-hover: #1e293b;
+      --text-muted: #94a3b8;
+      --text-primary: #f1f5f9;
+      --text-heading: #f1f5f9;
+      --accent: #06b6d4;
+      --accent-hover: #22d3ee;
+      --border: rgba(148, 163, 184, 0.1);
+      --glass-bg: rgba(17, 24, 39, 0.7);
+      --glass-border: rgba(148, 163, 184, 0.12);
+      --info-strip-bg: rgba(17, 24, 39, 0.5);
+      --mesh-color-1: rgba(6, 182, 212, 0.07);
+      --mesh-color-2: rgba(99, 102, 241, 0.05);
+      --mesh-color-3: rgba(16, 185, 129, 0.04);
+      --toggle-bg: #1e293b;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8f9fb;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --text-muted: #64748b;
+      --text-primary: #334155;
+      --text-heading: #0f172a;
+      --accent: #0891b2;
+      --accent-hover: #0e7490;
+      --border: rgba(51, 65, 85, 0.08);
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(51, 65, 85, 0.1);
+      --info-strip-bg: rgba(255, 255, 255, 0.6);
+      --mesh-color-1: rgba(8, 145, 178, 0.06);
+      --mesh-color-2: rgba(99, 102, 241, 0.04);
+      --mesh-color-3: rgba(16, 185, 129, 0.03);
+      --toggle-bg: #e2e8f0;
+      --shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated mesh background ── */
+    .mesh-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .mesh-bg::before,
+    .mesh-bg::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      transition: background var(--transition-speed) ease;
+      animation: mesh-drift 20s ease-in-out infinite alternate;
+    }
+    .mesh-bg::before {
+      width: 600px; height: 600px;
+      top: -10%; left: -5%;
+      background: var(--mesh-color-1);
+    }
+    .mesh-bg::after {
+      width: 500px; height: 500px;
+      bottom: -10%; right: -5%;
+      background: var(--mesh-color-2);
+      animation-delay: -10s;
+    }
+    .mesh-extra {
+      position: absolute;
+      width: 400px; height: 400px;
+      top: 40%; left: 50%;
+      border-radius: 50%;
+      filter: blur(100px);
+      background: var(--mesh-color-3);
+      transition: background var(--transition-speed) ease;
+      animation: mesh-drift 25s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes mesh-drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(30px, -20px) scale(1.05); }
+      100% { transform: translate(-20px, 30px) scale(0.95); }
+    }
+
+    /* ── Diagonal geometric accent ── */
+    .geo-accent {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 320px;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .geo-accent::before {
+      content: '';
+      position: absolute;
+      top: -60%; left: -10%; right: -10%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 40px,
+        var(--mesh-color-1) 40px,
+        var(--mesh-color-1) 42px
+      );
+      transition: background var(--transition-speed) ease;
+      opacity: 0.6;
+    }
+    .geo-accent::after {
+      content: '';
+      position: absolute;
+      top: -60%; left: -10%; right: -10%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        -55deg,
+        transparent,
+        transparent 80px,
+        var(--mesh-color-2) 80px,
+        var(--mesh-color-2) 83px
+      );
+      transition: background var(--transition-speed) ease;
+      opacity: 0.4;
+    }
+
+    /* ── Layout wrapper ── */
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Top bar ── */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      position: relative;
+      z-index: 10;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition-speed) ease;
+    }
+    .brand-icon svg {
+      width: 20px; height: 20px;
+      fill: #fff;
+    }
+    .brand-name {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-heading);
+      letter-spacing: -0.02em;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* ── Theme toggle ── */
+    .theme-toggle {
+      background: var(--toggle-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: 44px; height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed) ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .theme-toggle:hover {
+      border-color: var(--accent);
+    }
+    .theme-toggle svg {
+      width: 20px; height: 20px;
+      position: absolute;
+      transition: all var(--transition-speed) ease;
+    }
+    .theme-toggle .icon-sun {
+      fill: #f59e0b;
+      opacity: 0;
+      transform: rotate(-90deg) scale(0.5);
+    }
+    .theme-toggle .icon-moon {
+      fill: #94a3b8;
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+    [data-theme="light"] .theme-toggle .icon-sun {
+      opacity: 1;
+      transform: rotate(0deg) scale(1);
+    }
+    [data-theme="light"] .theme-toggle .icon-moon {
+      opacity: 0;
+      transform: rotate(90deg) scale(0.5);
+    }
+
+    /* ── Main content ── */
+    .content {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 2rem 3rem;
+    }
+
+    /* ── Hero area ── */
+    .hero {
+      text-align: center;
+      padding: 2rem 0 2.5rem;
+    }
+    .hero h1 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 2rem;
+      color: var(--text-heading);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      transition: color var(--transition-speed) ease;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* ── Server info strip ── */
+    .info-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      padding: 0.85rem 1.5rem;
+      background: var(--info-strip-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      transition: all var(--transition-speed) ease;
+    }
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+    .info-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: color var(--transition-speed) ease;
+    }
+    .info-value {
+      color: var(--text-heading);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: color var(--transition-speed) ease;
+    }
+    .info-value.containers {
+      color: var(--accent);
+    }
+
+    /* ── Section heading ── */
+    .section-heading {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--text-heading);
+      margin-bottom: 1.25rem;
+      letter-spacing: -0.01em;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* ── App cards grid ── */
+    .app-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .app-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all var(--transition-speed) ease;
+      text-decoration: none;
+      display: block;
+    }
+    .app-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .app-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.65rem;
+    }
+    .app-card-name {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-heading);
+      transition: color var(--transition-speed) ease;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.running  { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .status-dot.warning  { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+    .status-dot.down     { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
+    .app-card-desc {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      transition: color var(--transition-speed) ease;
+    }
+    .app-card-arrow {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      transition: color var(--transition-speed) ease;
+    }
+    .app-card:hover .app-card-arrow { color: var(--accent-hover); }
+    .app-card-arrow svg {
+      width: 14px; height: 14px;
+      fill: currentColor;
+      transition: transform 0.2s ease;
+    }
+    .app-card:hover .app-card-arrow svg { transform: translateX(3px); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px dashed var(--glass-border);
+      border-radius: 16px;
+      transition: all var(--transition-speed) ease;
+    }
+    .empty-state-icon {
+      width: 48px; height: 48px;
+      margin: 0 auto 1rem;
+      fill: var(--text-muted);
+      opacity: 0.4;
+      transition: fill var(--transition-speed) ease;
+    }
+    .empty-state p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      transition: color var(--transition-speed) ease;
+    }
+    .empty-state p:last-child {
+      font-size: 0.825rem;
+      margin-top: 0.35rem;
+      opacity: 0.7;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      opacity: 0.6;
+      transition: color var(--transition-speed) ease;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .top-bar { padding: 1rem 1.25rem; }
+      .content { padding: 0 1.25rem 2rem; }
+      .hero h1 { font-size: 1.5rem; }
+      .info-strip { gap: 1rem; padding: 0.75rem 1rem; }
+      .app-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mesh-bg">
+    <div class="mesh-extra"></div>
+  </div>
+  <div class="geo-accent"></div>
+
+  <div class="page-wrapper">
+    <!-- Top bar -->
+    <header class="top-bar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <span class="brand-name">Protek Support</span>
+      </div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24"><path d="M12 7a5 5 0 100 10 5 5 0 000-10zm0-5a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm0 18a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm9-9a1 1 0 010 2h-1a1 1 0 010-2h1zM4 11a1 1 0 010 2H3a1 1 0 010-2h1zm14.07-6.07a1 1 0 010 1.41l-.71.71a1 1 0 01-1.41-1.41l.71-.71a1 1 0 011.41 0zM7.05 16.95a1 1 0 010 1.41l-.71.71a1 1 0 01-1.41-1.41l.71-.71a1 1 0 011.41 0zm11.9 0a1 1 0 01-1.41 1.41l-.71-.71a1 1 0 011.41-1.41l.71.71zM7.05 7.05a1 1 0 01-1.41 0l-.71-.71A1 1 0 016.34 4.93l.71.71a1 1 0 010 1.41z"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      </button>
+    </header>
+
+    <main class="content">
+      <!-- Hero -->
+      <section class="hero">
+        <h1>Server Portal</h1>
+        <p>Internal application directory for hosted services</p>
+      </section>
+
+      <!-- Server info strip -->
+      <div class="info-strip">
+        <div class="info-item">
+          <span class="info-label">Hostname</span>
+          <span class="info-value">PTSCORPVS0WAPP01</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">IP</span>
+          <span class="info-value">10.69.69.10</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Containers</span>
+          <span class="info-value containers" id="containerCount">—</span>
+        </div>
+      </div>
+
+      <!-- App directory -->
+      <h2 class="section-heading">Application Directory</h2>
+      <div id="appDirectory"></div>
+    </main>
+
+    <footer class="footer">
+      Protek Support &middot; PTSCORPVS0WAPP01
+    </footer>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    //  APP REGISTRY — Add new apps here
+    // ═══════════════════════════════════════════════════════════
+    const apps = [
+      // { name: "App Name", description: "What it does", path: "/app1", status: "running" },
+    ];
+    // ═══════════════════════════════════════════════════════════
+
+    // ── Theme toggle ──
+    (function initTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    });
+
+    // ── Render app directory ──
+    function renderApps() {
+      const container = document.getElementById('appDirectory');
+
+      if (apps.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg class="empty-state-icon" viewBox="0 0 24 24"><path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 4h4v3h-4V4z"/></svg>
+            <p>No applications deployed yet</p>
+            <p>Apps will appear here as they are added to this server</p>
+          </div>`;
+        return;
+      }
+
+      let html = '<div class="app-grid">';
+      for (const app of apps) {
+        const statusClass = app.status || 'running';
+        html += `
+          <a href="${app.path}" class="app-card">
+            <div class="app-card-header">
+              <span class="app-card-name">${app.name}</span>
+              <span class="status-dot ${statusClass}" title="${statusClass}"></span>
+            </div>
+            <div class="app-card-desc">${app.description}</div>
+            <div class="app-card-arrow">
+              Open
+              <svg viewBox="0 0 24 24"><path d="M5 12h14m-7-7l7 7-7 7"/></svg>
+            </div>
+          </a>`;
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    renderApps();
+
+    // ── Fetch container count from Traefik API ──
+    (async function fetchContainerCount() {
+      try {
+        const resp = await fetch('http://' + location.hostname + ':8080/api/overview');
+        if (!resp.ok) throw new Error(resp.status);
+        const data = await resp.json();
+        const count = data.http?.services?.total ?? '?';
+        document.getElementById('containerCount').textContent = count;
+      } catch {
+        document.getElementById('containerCount').textContent = '—';
+      }
+    })();
+  </script>
+</body>
+</html>
