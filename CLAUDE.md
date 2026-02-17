@@ -62,9 +62,17 @@ networks:
     external: true
 ```
 
+## GitHub Repository
+
+- **Repo**: `https://github.com/msp-vibe-coder/web-app-management.git`
+- **Branch**: `main`
+- **Auth**: GitHub PAT stored in `.env` (use for push if credential helper isn't configured)
+
 ## Repository Contents
 
 - `.env` — Contains server credentials (IP, username, password) and GitHub PAT as a backup reference. **Must stay in `.gitignore`.**
+- `.gitignore` — Excludes `.env` from version control
+- `CLAUDE.md` — This file; project guidance for Claude Code
 
 ## Security Notes
 
