@@ -66,7 +66,7 @@ networks:
 
 - **Repo**: `https://github.com/msp-vibe-coder/web-app-management.git`
 - **Branch**: `main`
-- **Auth**: GitHub PAT stored in `.env` (use for push if credential helper isn't configured)
+- **Auth**: PAT is embedded in the remote URL in `.git/config` (no credential prompt). If the remote is ever reset to plain HTTPS, re-embed it: `git remote set-url origin https://msp-vibe-coder:<PAT>@github.com/msp-vibe-coder/web-app-management.git` (PAT is in `.env`)
 
 ## Landing Page
 
