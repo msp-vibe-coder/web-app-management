@@ -101,6 +101,30 @@ scp landing-page/html/index.html wapp01admin@10.69.69.10:/home/wapp01admin/landi
 - `CLAUDE.md` — This file; project guidance for Claude Code
 - `landing-page/` — Landing page app (nginx container + HTML)
 
+## Known Issues & Workarounds
+
+### SSH stdout is not captured by the Bash tool
+
+When running `ssh wapp01admin@10.69.69.10 "some command"`, the Bash tool does not capture stdout. Commands succeed (exit code 0) but output is silently dropped. Write-only commands (`mkdir`, `docker compose up -d`, heredoc writes) work fine since they have no meaningful output.
+
+**Workaround**: Redirect command output to a file on the server, then `scp` it back locally and read it:
+
+```bash
+# 1. Run the command, redirect output to a temp file on the server
+ssh wapp01admin@10.69.69.10 "docker ps > /tmp/result.txt 2>&1"
+
+# 2. Copy the file locally
+scp wapp01admin@10.69.69.10:/tmp/result.txt "C:/coding/web-app-server-management/result.txt"
+
+# 3. Read it with the Read tool, then clean up both copies
+```
+
+**Also works**: `scp` for deploying files to the server works without issues.
+
+### Traefik image must stay compatible with Docker Engine API
+
+Docker Engine 29.2.1 requires a minimum Docker API version of 1.44. The `traefik:v3.3` image shipped with a Docker SDK using API v1.24, which caused the Docker provider to fail silently (Traefik ran but couldn't discover any containers). Setting `DOCKER_API_VERSION=1.44` as an env var did **not** fix it — the Traefik binary ignores that variable. The fix was upgrading to `traefik:latest`. If pinning a version in the future, verify Docker API compatibility first.
+
 ## Security Notes
 
 - **Never commit `.env`** — it contains plaintext passwords and a GitHub PAT. It must be listed in `.gitignore` before initializing a git repository.
