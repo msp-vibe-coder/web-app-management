@@ -28,7 +28,6 @@
       --border: rgba(148, 163, 184, 0.1);
       --glass-bg: rgba(17, 24, 39, 0.7);
       --glass-border: rgba(148, 163, 184, 0.12);
-      --info-strip-bg: rgba(17, 24, 39, 0.5);
       --mesh-color-1: rgba(6, 182, 212, 0.07);
       --mesh-color-2: rgba(99, 102, 241, 0.05);
       --mesh-color-3: rgba(16, 185, 129, 0.04);
@@ -48,7 +47,6 @@
       --border: rgba(51, 65, 85, 0.08);
       --glass-bg: rgba(255, 255, 255, 0.7);
       --glass-border: rgba(51, 65, 85, 0.1);
-      --info-strip-bg: rgba(255, 255, 255, 0.6);
       --mesh-color-1: rgba(8, 145, 178, 0.06);
       --mesh-color-2: rgba(99, 102, 241, 0.04);
       --mesh-color-3: rgba(16, 185, 129, 0.03);
@@ -267,44 +265,6 @@
       transition: color var(--transition-speed) ease;
     }
 
-    /* ── Server info strip ── */
-    .info-strip {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-      padding: 0.85rem 1.5rem;
-      background: var(--info-strip-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--glass-border);
-      border-radius: 14px;
-      margin-bottom: 2.5rem;
-      flex-wrap: wrap;
-      transition: all var(--transition-speed) ease;
-    }
-    .info-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-    }
-    .info-label {
-      color: var(--text-muted);
-      font-weight: 500;
-      transition: color var(--transition-speed) ease;
-    }
-    .info-value {
-      color: var(--text-heading);
-      font-family: var(--font-heading);
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: color var(--transition-speed) ease;
-    }
-    .info-value.containers {
-      color: var(--accent);
-    }
-
     /* ── Section heading ── */
     .section-heading {
       font-family: var(--font-heading);
@@ -429,7 +389,6 @@
       .top-bar { padding: 1rem 1.25rem; }
       .content { padding: 0 1.25rem 2rem; }
       .hero h1 { font-size: 1.5rem; }
-      .info-strip { gap: 1rem; padding: 0.75rem 1rem; }
       .app-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -462,22 +421,6 @@
         <p>Internal application directory for hosted services</p>
       </section>
 
-      <!-- Server info strip -->
-      <div class="info-strip">
-        <div class="info-item">
-          <span class="info-label">Hostname</span>
-          <span class="info-value">PTSCORPVS0WAPP01</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">IP</span>
-          <span class="info-value">10.69.69.10</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Containers</span>
-          <span class="info-value containers" id="containerCount">—</span>
-        </div>
-      </div>
-
       <!-- App directory -->
       <h2 class="section-heading">Application Directory</h2>
       <div id="appDirectory"></div>
@@ -494,6 +437,9 @@
     // ═══════════════════════════════════════════════════════════
     const apps = [
       // { name: "App Name", description: "What it does", path: "/app1", status: "running" },
+      { name: "CIPP Standards", description: "Browse and filter Microsoft 365 security/compliance standards", path: "/cipp-standards", status: "running" },
+      { name: "SOW Builder", description: "Create and manage Statements of Work", path: "/sow-builder", status: "running" },
+      { name: "Veeam Audit", description: "Backup storage monitoring and audit dashboard", path: "/veeam-audit", status: "running" },
     ];
     // ═══════════════════════════════════════════════════════════
 
@@ -546,18 +492,6 @@
 
     renderApps();
 
-    // ── Fetch container count from Traefik API ──
-    (async function fetchContainerCount() {
-      try {
-        const resp = await fetch('http://' + location.hostname + ':8080/api/overview');
-        if (!resp.ok) throw new Error(resp.status);
-        const data = await resp.json();
-        const count = data.http?.services?.total ?? '?';
-        document.getElementById('containerCount').textContent = count;
-      } catch {
-        document.getElementById('containerCount').textContent = '—';
-      }
-    })();
   </script>
 </body>
 </html>
