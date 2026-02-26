@@ -1,0 +1,33 @@
+services:
+  ticket-ai:
+    build: .
+    container_name: ticket-ai
+    restart: unless-stopped
+    volumes:
+      - ticket-ai-data:/data
+    env_file:
+      - .env.docker
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/app.db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ticket-ai.rule=PathPrefix(`/ticket-ai`)"
+      - "traefik.http.routers.ticket-ai.entrypoints=websecure"
+      - "traefik.http.routers.ticket-ai.tls=true"
+      - "traefik.http.services.ticket-ai.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/ticket-ai/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - traefik-net
+
+networks:
+  traefik-net:
+    external: true
+
+volumes:
+  ticket-ai-data:
